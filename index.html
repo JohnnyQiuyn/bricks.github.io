@@ -25,6 +25,20 @@
             font-size: 24px;
             margin: 20px 0;
         }
+        #startButton {
+            padding: 10px 30px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: background 0.3s;
+        }
+        #startButton:hover {
+            background: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -32,6 +46,7 @@
         分数: <span id="score">0</span>
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <button id="startButton">开始游戏</button>
     <script src="game.js"></script>
 </body>
 </html>

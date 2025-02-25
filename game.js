@@ -17,6 +17,9 @@ const config = {
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// 游戏状态
+let gameStarted = false;
+
 // 游戏对象
 const paddle = {
     x: canvas.width / 2 - config.paddleWidth / 2,
@@ -67,6 +70,16 @@ document.addEventListener('keyup', (e) => {
     }
 });
 
+// 开始按钮点击事件
+document.getElementById('startButton').addEventListener('click', () => {
+    if (!gameStarted) {
+        gameStarted = true;
+        document.getElementById('startButton').textContent = '重新开始';
+    } else {
+        resetGame();
+    }
+});
+
 // 碰撞检测
 function collisionDetection() {
     for (let c = 0; c < config.brickColumnCount; c++) {
@@ -82,7 +95,7 @@ function collisionDetection() {
 
                     if (score === config.brickRowCount * config.brickColumnCount) {
                         alert('恭喜你赢了！');
-                        document.location.reload();
+                        resetGame();
                     }
                 }
             }
@@ -132,35 +145,68 @@ function drawBricks() {
 
 // 更新游戏状态
 function update() {
-    // 更新挡板位置
+    if (!gameStarted) {
+        // 游戏未开始时，球跟随挡板移动
+        ball.x = paddle.x + paddle.width / 2;
+        ball.y = paddle.y - ball.radius;
+        return;
+    }
+
     if (rightPressed && paddle.x < canvas.width - paddle.width) {
         paddle.x += paddle.dx;
     } else if (leftPressed && paddle.x > 0) {
         paddle.x -= paddle.dx;
     }
 
-    // 更新球的位置
     ball.x += ball.dx;
     ball.y += ball.dy;
 
-    // 墙壁碰撞检测
+    // 碰撞检测
     if (ball.x + ball.dx > canvas.width - ball.radius || ball.x + ball.dx < ball.radius) {
         ball.dx = -ball.dx;
     }
     if (ball.y + ball.dy < ball.radius) {
         ball.dy = -ball.dy;
-    } else if (ball.y + ball.radius > paddle.y && ball.y - ball.radius < paddle.y + paddle.height) {
-        if (ball.x + ball.radius > paddle.x && ball.x - ball.radius < paddle.x + paddle.width) {
+    } else if (ball.y + ball.dy > paddle.y - ball.radius) {
+        if (ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
             ball.dy = -ball.dy;
-            // 确保球不会卡在挡板内
-            ball.y = paddle.y - ball.radius;
-        } else {
+        } else if (ball.y + ball.dy > canvas.height - ball.radius) {
             alert('游戏结束！');
-            document.location.reload();
+            resetGame();
         }
     }
 
     collisionDetection();
+}
+
+// 重置游戏状态
+function resetGame() {
+    gameStarted = false;
+    document.getElementById('startButton').textContent = '开始游戏';
+
+    // 重置球的位置
+    ball.x = canvas.width / 2;
+    ball.y = paddle.y - config.ballRadius;
+    ball.dx = config.ballSpeed;
+    ball.dy = -config.ballSpeed;
+
+    // 重置挡板位置
+    paddle.x = canvas.width / 2 - config.paddleWidth / 2;
+
+    // 重置键盘按键状态
+    rightPressed = false;
+    leftPressed = false;
+
+    // 重置分数
+    score = 0;
+    document.getElementById('score').textContent = score;
+
+    // 重置砖块
+    for (let c = 0; c < config.brickColumnCount; c++) {
+        for (let r = 0; r < config.brickRowCount; r++) {
+            bricks[c][r].status = 1;
+        }
+    }
 }
 
 // 主游戏循环
